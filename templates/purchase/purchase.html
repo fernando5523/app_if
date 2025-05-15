@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Purchase | Terranova</title>
+
+        <!-- FAVICON -->
+        <link href="{{ url_for('static', filename='img/logos/favicon.png') }}" rel="icon" type="image/png" />
+
+        <!-- BOOTSTRAP -->
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+            crossorigin="anonymous"
+        />
+
+        <!-- BOOTSTRAP ICONS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+
+        <!-- DATATABLE STYLE -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" />
+
+        <!-- CUSTOM PURCHASE STYLE -->
+        <link
+            id="stylesheet"
+            type="text/css"
+            href="{{ url_for('static', filename='css/purchase/purchase.css') }}"
+            rel="stylesheet"
+            media="screen"
+        />
+
+        <!-- CUSTOM PRELOADER STYLE -->
+        <link
+            id="stylesheet"
+            type="text/css"
+            href="{{ url_for('static', filename='css/preloader/preloader.css') }}"
+            rel="stylesheet"
+            media="screen"
+        />
+
+        <style>
+            /* Estilo para fila negra */
+            .fila-negra {
+                background-color: #333; /* Color de fondo oscuro */
+                color: #fff; /* Color de texto blanco */
+            }
+            .messages-container {
+                max-height: 400px;
+                overflow-y: auto;
+                margin-top: 20px;
+            }
+            .message {
+                background-color: #f8f9fa;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                margin-bottom: 10px;
+                padding: 10px;
+                font-size: 14px;
+            }
+            .modal-content {
+                max-width: 100%;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- START PRELOADER SECTION -->
+        <div class="page-wrapper" id="preloaderWindow">
+            <div class="position-relative overflow-hidden min-vh-100 d-flex align-items-center justify-content-center">
+                <div class="d-flex align-items-center justify-content-center w-100">
+                    <div class="row justify-content-center w-100 m-2">
+                        <div class="col-md-7 col-lg-6 col-xxl-3">
+                            <div class="card mb-0" id="card-preloader">
+                                <div class="card-body">
+                                    <!-- START LOGO SECTION -->
+                                    <a href="#" class="text-nowrap text-center d-block py-1 w-100">
+                                        <img
+                                            src="{{ url_for('static', filename='img/logos/logo-light.svg') }}"
+                                            width="205"
+                                            alt="logo-login"
+                                        />
+                                    </a>
+                                    <p class="preloader-text-logo mb-5">Terranova Trading S.A.C.</p>
+                                    <!-- END LOGO SECTION -->
+
+                                    <!-- START SPINNER SECTION -->
+                                    <div class="preloader-spinner"></div>
+                                    <div class="preloader-text">Cargando</div>
+                                    <div class="messages-container text-center" id="messagesLoad">
+                                        <!-- Mensajes de carga se mostrarán aquí -->
+                                        <!-- <button id="goHomeButton" class="btn btn-primary mt-3">Ir a Inicio</button> -->
+                                    </div>
+                                    
+                                    <!-- END SPINNER SECTION -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PRELOADER SECTION -->
+
+        <!-- START PAGE SECTION -->
+        <div id="contentWindow">
+            <!-- START NAVBAR SECTION -->
+                  <!-- START NAVBAR SECTION -->
+        <div class="justify-content-center d-flex sticky-top nav-header">
+            <nav class="navbar navbar-expand-lg col-12 col-lg-10">
+                <div class="container-fluid px-4 px-md-5 px-lg-0">
+                    <!-- START LOGO NAVBAR -->
+                    <a class="navbar-brand" href="/invoice">
+                        <img src="{{ url_for('static', filename='img/logos/logo-dark.svg') }}" height="50" alt="logo-login" />
+                    </a>
+
+                    <!-- CENTRADO DEL NOMBRE DE LA EMPRESA -->
+                    <div class="navbar-brand-centered mx-3">
+                        <h4 class="" id="bussines_name">
+
+                        </h4>
+                    </div>
+
+                    <div class="dropdown ms-auto">
+                        <button class="btn btn-secondary" type="button" id="dropdownMenuButton1"
+                            data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 1.25rem;">
+                            <i class="bi bi-person-circle me-2 user-icon"></i>
+                            <span id="userName"></span>
+                        </button>
+                    </div>
+
+                    <!-- END LOGO NAVBAR -->
+
+                    <!-- START BUTTON NAVBAR -->
+                    <button
+                        class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarToggler"
+                        aria-controls="navbarToggler"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation"
+                    >
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <!-- END BUTTON NAVBAR -->
+                </div>
+            </nav>
+            <!-- END LINKS NAVBAR -->
+        </div>
+        <!-- END NAVBAR SECTION -->
+            <!-- END NAVBAR SECTION -->
+
+            <!-- START PURCHASE SECTION -->
+            <div class="col-lg-12 px-3 py-3">
+                <div class="card mb-0">
+                    <h5 class="card-header">Datos de Productos - Factura Electrónica</h5>
+                    <div class="card-body">
+                        <!-- START FORM SECTION -->
+                        <form class="needs-validation" novalidate id="formPurchaseLines">
+                            <div class="sm-wrapper">
+                                <table id="purchaseProduct" class="display table-striped table-purchase" style="width: 100%">
+                                    <thead>
+                                        <tr>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #a7f09f !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Linea - FE"
+                                                    style="
+                                                        background: #a7f09f !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Linea - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #a7f09f !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Codigo - FE"
+                                                    style="
+                                                        background: #a7f09f !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Codigo - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #a7f09f !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Descripcion - FE"
+                                                    style="
+                                                        background: #a7f09f !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 636px !important;
+                                                    "
+                                                    value="Descripcion - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #a7f09f !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Empaque - FE"
+                                                    style="
+                                                        background: #a7f09f !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Empaque - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #a7f09f !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Impuesto - FE"
+                                                    style="
+                                                        background: #a7f09f !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Impuesto - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #a7f09f !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Cantidad - FE"
+                                                    style="
+                                                        background: #a7f09f !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Cantidad - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #c6f1ff !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Val. Uni. - FE"
+                                                    style="
+                                                        background: #c6f1ff !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Val. Uni. - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #c6f1ff !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Sub Tot. - FE"
+                                                    style="
+                                                        background: #c6f1ff !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Sub Total - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #c6f1ff !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Sub Tot. - FE"
+                                                    style="
+                                                        background: #c6f1ff !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Igv"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #c6f1ff !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Total - FE"
+                                                    style="
+                                                        background: #c6f1ff !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Total - FE"
+                                                    disabled
+                                                />
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                style="
+                                                    background: #ffc38d !important;
+                                                    padding-left: 5px !important;
+                                                    padding-right: 5px !important;
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="Identificado"
+                                                    style="
+                                                        background: #ffc38d !important;
+                                                        border: 0px;
+                                                        color: #000;
+                                                        font-size: 17px;
+                                                        font-weight: bold;
+                                                        text-align: center;
+                                                        width: 120px !important;
+                                                    "
+                                                    value="Identificado"
+                                                    disabled
+                                                />
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="purchaseLines"></tbody>
+                                </table>
+                            </div>
+                            <div class="row m-0 p-0">
+                                <div class="col-12 col-md-4 col-xl-3 mt-3 mb-2">
+                                    <label class="form-label" for="taxableAmount">Sub Total - FE</label>
+                                    <input
+                                        type="text"
+                                        class="form-control fw-bold"
+                                        style="color: #e91429 !important; font-size: 18px !important"
+                                        id="taxableAmount"
+                                        value="0.00"
+                                        autocomplete="off"
+                                        disabled
+                                        required
+                                    />
+                                </div>
+                                <div class="col-12 col-md-4 col-xl-3 mt-3 mb-2">
+                                    <label class="form-label" for="taxAmount">Impuesto - FE</label>
+                                    <input
+                                        type="text"
+                                        class="form-control fw-bold"
+                                        style="color: #e91429 !important; font-size: 18px !important"
+                                        id="taxAmount"
+                                        value="0.00"
+                                        autocomplete="off"
+                                        disabled
+                                        required
+                                    />
+                                </div>
+                                <div class="col-12 col-md-4 col-xl-3 mt-3 mb-2">
+                                    <label class="form-label" for="totalAmount">Total - FE</label>
+                                    <input
+                                        type="text"
+                                        class="form-control fw-bold"
+                                        style="color: #e91429 !important; font-size: 18px !important"
+                                        id="totalAmount"
+                                        value="0.00"
+                                        autocomplete="off"
+                                        disabled
+                                        required
+                                    />
+                                </div>
+                                <div class="col-12 col-xl-3 mt-3 mb-2 mb-xl-0">
+                                    <div class="d-flex justify-content-end mt-1 mt-xl-4">
+                                        <button
+                                            type="button"
+                                            class="btn btn-upload fs-6 fw-semibold ms-3"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmWindow"
+                                        >
+                                            <i class="bi bi-cloud-arrow-up-fill me-2"></i>
+                                            Añadir Líneas
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- END FORM SECTION -->
+                    </div>
+                </div>
+            </div>
+            <!-- END PURCHASE SECTION -->
+        </div>
+        <!-- END PAGE SECTION -->
+
+        <!-- START MODAL SECTION -->
+        <div class="modal fade" id="modalWindow" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content rounded-0">
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center">
+                            <div class="d-flex justify-content-center pb-2">
+                                <div class="d-flex justify-content-center align-items-center rounded-pill" id="iconModal">
+                                    <img class="icon-height" src="" alt="icon-modal" id="iconChange" />
+                                </div>
+                            </div>
+                            <div id="contentModal"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center modal-footer-background rounded-0 position-relative">
+                        <div class="modal-triangle"></div>
+                        <div class="text-center p-4" id="btnModal"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END MODAL SECTION -->
+
+        <!-- START MODAL SECTION -->
+        <div class="modal fade" id="confirmWindow" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content rounded-0">
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center">
+                            <div class="d-flex justify-content-center pb-2">
+                                <div class="d-flex justify-content-center align-items-center rounded-pill icon-warning" id="iconModal">
+                                    <img
+                                        class="icon-height"
+                                        src="{{ url_for('static', filename='img/modals/warning-modal.svg') }}"
+                                        alt="icon-modal"
+                                        id="iconChange"
+                                    />
+                                </div>
+                            </div>
+                            <div id="contentModal">
+                                <h1 class="modal-text-title">Advertencia</h1>
+                                <p class="modal-text-body">
+                                    ¿Se añadirán nuevas líneas para el Pedido de Compra en el ERP Dynamics 365, desea continuar?
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center modal-footer-background rounded-0 position-relative">
+                        <div class="modal-triangle"></div>
+                        <div class="text-center p-4">
+                            <button
+                                type="button"
+                                class="btn shadow-none modal-btn-acept rounded-pill px-5 me-3"
+                                data-bs-dismiss="modal"
+                                id="btnPurchase"
+                            >
+                                Sí
+                            </button>
+                            <button type="button" class="btn shadow-none modal-btn-cancel rounded-pill px-5 ms-3" data-bs-dismiss="modal">
+                                No
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END MODAL SECTION -->
+
+        <!-- BOOTSTRAP -->
+        <script
+            src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+            integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+            crossorigin="anonymous"
+        ></script>
+
+        <!-- JQUERY -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+
+        <!-- JQUERY COOKIE -->
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+
+        <!-- JB VALIDATOR -->
+        <script src="https://cdn.jsdelivr.net/npm/@emretulek/jbvalidator"></script>
+
+        <!-- DATATABLE JS -->
+        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+        <!-- SweetAlert -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <!-- Socket -->
+        <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+        <!-- CUSTOM PURCHASE JS -->
+        <script>
+            // Recuperar las variables de la URL
+          
+            let id = '{{ id }}';
+            let factura = '{{ factura }}';
+            let proveedor = '{{ proveedor }}'
+            let funcionalidad = '{{ funcionalidadApp }}'
+
+        </script>
+
+        <!-- CUSTOM PURCHASE JS -->
+        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/purchase/purchase.js') }}"></script>
+    </body>
+</html>

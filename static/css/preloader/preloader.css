@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+body {
+    background: #f0f2f5;
+    color: gray;
+    font-family: 'League Spartan', sans-serif;
+    font-size: 16px;
+    font-weight: normal;
+    line-height: 1.8;
+}
+
+#card-preloader {
+    --bs-card-border-width: 0px !important;
+    --bs-card-bg: #f0f2f5 !important;
+    box-shadow: none !important;
+}
+
+.preloader-spinner {
+    animation: rotation 1s linear infinite;
+    border: 5px solid #212529;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    height: 60px;
+    margin: 1.5rem auto;
+    width: 60px;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.preloader-text {
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.preloader-text-logo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center !important;
+    text-transform: uppercase;
+}
