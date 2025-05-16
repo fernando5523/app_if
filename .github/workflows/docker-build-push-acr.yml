@@ -16,25 +16,6 @@ env:
   ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  TF_VAR_app_env_vars: >-
-        {
-          "APP_WORKERS":           "${{ secrets.APP_WORKERS }}",
-          "APP_DB_HOST":           "${{ secrets.APP_DB_HOST }}",
-          "APP_DB_NAME":           "${{ secrets.APP_DB_NAME }}",
-          "APP_DB_USER":           "${{ secrets.APP_DB_USER }}",
-          "APP_DB_PASS":           "${{ secrets.APP_DB_PASS }}",
-          "APP_DB_TOKEN_HOST":     "${{ secrets.APP_DB_TOKEN_HOST }}",
-          "APP_DB_TOKEN_NAME":     "${{ secrets.APP_DB_TOKEN_NAME }}",
-          "APP_DB_TOKEN_USER":     "${{ secrets.APP_DB_TOKEN_USER }}",
-          "APP_DB_TOKEN_PASS":     "${{ secrets.APP_DB_TOKEN_PASS }}",
-          "APP_DB_TOKEN_PORT":     "${{ secrets.APP_DB_TOKEN_PORT }}",
-          "ERP_CLIENT_ID":         "${{ secrets.ERP_CLIENT_ID }}",
-          "ERP_CLIENT_SECRET":     "${{ secrets.ERP_CLIENT_SECRET }}",
-          "APP_MODE":              "${{ secrets.APP_MODE }}",
-          "ERP_DEBUG":             "${{ secrets.ERP_DEBUG }}",
-          "ERP_PRODUCTION":        "${{ secrets.ERP_PRODUCTION }}",
-          "BASE_URL_RRHH":         "${{ secrets.BASE_URL_RRHH }}"
-        }
 
 jobs:
   build-and-push:

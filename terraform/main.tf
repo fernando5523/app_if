@@ -28,12 +28,9 @@ resource "azurerm_linux_web_app" "app" {
     health_check_eviction_time_in_min = 2
   }
 
-  app_settings = merge(
-    var.app_env_vars,
-    {
-      FORCE_REDEPLOY = timestamp()
-    }
-  )
+  app_settings = {
+    "FORCE_REDEPLOY"    = timestamp()
+  }
 
   identity {
     type = "SystemAssigned"
