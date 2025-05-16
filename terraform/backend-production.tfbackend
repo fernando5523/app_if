@@ -1,0 +1,4 @@
+resource_group_name  = "storage-rg"
+storage_account_name = "stterraformconfig"
+container_name       = "tfstate"
+key                  = "app-if-production/terraform.tfstate"
