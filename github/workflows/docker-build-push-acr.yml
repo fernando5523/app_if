@@ -1,0 +1,124 @@
+name: Build, Push Docker Image and Deploy Terraform
+
+on:
+  push:
+    branches: [ "develop" ]
+    tags: [ "*.*.*" ]
+    paths:
+      - 'terraform/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY_NAME: ittrvcontainers
+  IMAGE_NAME: app-if
+  TF_VERSION: "1.11.4"
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  TF_VAR_app_env_vars: >-
+        {
+          "APP_WORKERS":           "${{ secrets.APP_WORKERS }}",
+          "APP_DB_HOST":           "${{ secrets.APP_DB_HOST }}",
+          "APP_DB_NAME":           "${{ secrets.APP_DB_NAME }}",
+          "APP_DB_USER":           "${{ secrets.APP_DB_USER }}",
+          "APP_DB_PASS":           "${{ secrets.APP_DB_PASS }}",
+          "APP_DB_TOKEN_HOST":     "${{ secrets.APP_DB_TOKEN_HOST }}",
+          "APP_DB_TOKEN_NAME":     "${{ secrets.APP_DB_TOKEN_NAME }}",
+          "APP_DB_TOKEN_USER":     "${{ secrets.APP_DB_TOKEN_USER }}",
+          "APP_DB_TOKEN_PASS":     "${{ secrets.APP_DB_TOKEN_PASS }}",
+          "APP_DB_TOKEN_PORT":     "${{ secrets.APP_DB_TOKEN_PORT }}",
+          "ERP_CLIENT_ID":         "${{ secrets.ERP_CLIENT_ID }}",
+          "ERP_CLIENT_SECRET":     "${{ secrets.ERP_CLIENT_SECRET }}",
+          "APP_MODE":              "${{ secrets.APP_MODE }}",
+          "ERP_DEBUG":             "${{ secrets.ERP_DEBUG }}",
+          "ERP_PRODUCTION":        "${{ secrets.ERP_PRODUCTION }}",
+          "BASE_URL_RRHH":         "${{ secrets.BASE_URL_RRHH }}"
+        }
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository (incluye tags)
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Login to ACR
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        # Obtener el tag actual (si existe)
+        TAG_NAME=$(git describe --tags --exact-match 2>/dev/null || echo "")
+        SHORT_SHA=$(git rev-parse --short HEAD)
+
+        # Definir el tag para la imagen
+        if [ -n "$TAG_NAME" ]; then
+          IMAGE_TAG=$TAG_NAME  # Usa el tag de Git (ej: v1.0.0)
+          echo "Building with Git tag: $TAG_NAME"
+        else
+          IMAGE_TAG=$SHORT_SHA  # Fallback al SHA del commit
+          echo "Building with commit SHA: $SHORT_SHA"
+        fi
+
+        # Construir y subir la imagen
+        docker build -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:$IMAGE_TAG \
+                     -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest .
+        
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:$IMAGE_TAG
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+
+    - name: Logout from ACR
+      run: docker logout ${{ env.REGISTRY_NAME }}.azurecr.io
+
+  deploy-staging:
+    name: Despliegue a Staging
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - name: Init
+        run: terraform init -backend-config=backend-staging.tfbackend
+      - name: Plan Staging
+        run: terraform plan -no-color -var-file=staging.tfvars
+      - name: Apply Staging
+        run: terraform apply -auto-approve -no-color -var-file=staging.tfvars
+
+  deploy-production:
+    name: Despliegue a Producción
+    needs: deploy-staging
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: ./terraform
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - name: Init
+        run: terraform init -backend-config=backend-production.tfbackend
+      - name: Plan Production
+        run: terraform plan -no-color -var-file=production.tfvars
+      - name: Apply Production
+        run: terraform apply -auto-approve -no-color -var-file=production.tfvars
